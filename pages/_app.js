@@ -29,7 +29,7 @@ function GlobalStyle() {
  
 
 export default function MyApp({ Component, pageProps }) {
-    console.log("fashda")
+    console.log("Rodando em tudo")
     return (
         <>
         <GlobalStyle />
