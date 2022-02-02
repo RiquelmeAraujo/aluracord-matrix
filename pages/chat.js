@@ -2,34 +2,60 @@ import { Box, Text, TextField, Image, Button } from "@skynexui/components";
 import React, { useEffect, useState } from "react";
 import appConfig from "../config.json";
 import { createClient } from "@supabase/supabase-js";
+import { useRouter } from 'next/router';
+
+
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker.js'
 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMyMDc5MiwiZXhwIjoxOTU4ODk2NzkyfQ.mJJ2D3hJXfE0TVH2tg08uASD2vwc30gT7kBipZdgFmo'
 const SUPABASE_URL = 'https://lsyookcvlvewvangsllw.supabase.co'
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-
+function escutaMensagensEmTempoReal(adicionaMensagem) {
+  return supabaseClient
+    .from('mensagens')
+    .on('INSERT', (respostaLive) => {
+      adicionaMensagem(respostaLive.new);
+    })
+    .subscribe();
+}
 
 export default function ChatPage() {
   // Sua lógica vai aqui
+  const roteamento = useRouter();
+  const usuarioLogado = roteamento.query.username;
+
   const [mensagem, setMessage] = useState('')
   const [listaDeMensagem, setListaDeMensagem] = useState([]);
-  // ./Sua lógica vai aqui
+
 
 
   useEffect(() => {
     supabaseClient
-    .from('mensagens')
-    .select('*')
-    .order('id', {ascending: false})
-    .then(({data}) => {
-      setListaDeMensagem(data)
+      .from('mensagens')
+      .select('*')
+      .order('id', {ascending: false})
+      .then(({data}) => {
+        setListaDeMensagem(data)
+      });
+
+    const subscription = escutaMensagensEmTempoReal((novaMensagem) => {
+      setListaDeMensagem((valorAtualDaLista) => {
+        return [
+          novaMensagem, 
+          ...valorAtualDaLista,
+     ]
+      });
     });
+    return () => {
+      subscription.unsubscribe();
+    }
   }, []);
  
   function handleNovaMensagem (novaMensagem) {
     
     const mensagem = {
-      de: 'omariosouto',
+      de: usuarioLogado,
       texto: novaMensagem,
     };
 
@@ -39,10 +65,6 @@ export default function ChatPage() {
       mensagem
     ])
     .then(({data}) => {
-        setListaDeMensagem([
-          data[0], 
-          ...listaDeMensagem,
-     ]);
     });
 
 
@@ -56,7 +78,7 @@ export default function ChatPage() {
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: appConfig.theme.colors.primary[500],
-        backgroundImage: `url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)`,
+        backgroundImage: `url(https://images.pexels.com/photos/3172571/pexels-photo-3172571.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940)`,
         backgroundRepeat: "no-repeat",
         backgroundSize: "cover",
         backgroundBlendMode: "multiply",
@@ -70,11 +92,14 @@ export default function ChatPage() {
           flex: 1,
           boxShadow: "0 2px 10px 0 rgb(0 0 0 / 20%)",
           borderRadius: "5px",
-          backgroundColor: appConfig.theme.colors.neutrals[700],
+          //backgroundColor: appConfig.theme.colors.neutrals[700],
           height: "100%",
           maxWidth: "95%",
           maxHeight: "95vh",
           padding: "32px",
+
+          boxShadow: '0 2px 10px 0 rgba(0, 0, 0,  0.5)',
+          backdropFilter: 'blur( 4px )',
         }}
       >
         <Header />
@@ -96,13 +121,12 @@ export default function ChatPage() {
             as="form"
             styleSheet={{
               display: "flex",
-              alignItems: "center",
+              alignItems: "justify-content",
             }}
           >
             <TextField
               value={mensagem}
               onChange={(event) => {
-                console.log(event.target.value)
                 const valor = event.target.value;
                 setMessage(valor);
             }}
@@ -124,6 +148,23 @@ export default function ChatPage() {
                 backgroundColor: appConfig.theme.colors.neutrals['800'],
                 marginRight: "12px",
                 color: appConfig.theme.colors.neutrals['200'],
+              }}
+            />
+            <Button 
+              IconName="FaTelegram"
+              styleSheet={{
+                borderRadius: "5px",
+                marginRight:"5px",
+                minWidth: '30px',
+                minHeight: '30px',
+                fontSize: '20px',
+                marginBottom: '10px',
+                backgroundColor: appConfig.theme.colors.neutrals["300"],
+              }}
+            />            
+            <ButtonSendSticker 
+              onStickerClick={(sticker) => {
+                 handleNovaMensagem(':sticker: '+ sticker)
               }}
             />
           </Box>
@@ -158,7 +199,6 @@ function Header() {
 }
 
 function MessageList(props) {
-  console.log("MessageList", props);
   return (
     <Box
       tag="ul"
@@ -214,10 +254,17 @@ function MessageList(props) {
                 {new Date().toLocaleDateString()}
               </Text>
             </Box>
-            {mensagem.texto}
+            {/* {mensagem.texto.startWith(':sticker:').toString()} */}
+            {mensagem.texto.startsWith(':sticker:')
+             ? (
+               <Image src={mensagem.texto.replace(':sticker:', '')}/>
+            )
+            : (
+              mensagem.texto
+            )} 
           </Text>
         );
       })}
     </Box>
-  );
+  )
 }
