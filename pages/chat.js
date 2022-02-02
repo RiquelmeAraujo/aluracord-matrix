@@ -1,4 +1,4 @@
-import { Box, Text, TextField, Image, Button } from "@skynexui/components";
+import { Box, Text, TextField, Image, Button, Icon} from "@skynexui/components";
 import React, { useEffect, useState } from "react";
 import appConfig from "../config.json";
 import { createClient } from "@supabase/supabase-js";
@@ -141,6 +141,7 @@ export default function ChatPage() {
               type="textarea"
               styleSheet={{
                 width: "100%",
+                minHeight: '50px',
                 border: "0",
                 resize: "none",
                 borderRadius: "5px",
@@ -151,15 +152,32 @@ export default function ChatPage() {
               }}
             />
             <Button 
-              IconName="FaTelegram"
+              iconName="FaTelegram"
+              onClick={(event)=>{
+                event.preventDefault();
+                handleNovaMensagem(mensagem);
+              }}
               styleSheet={{
-                borderRadius: "5px",
-                marginRight:"5px",
-                minWidth: '30px',
-                minHeight: '30px',
+                borderRadius: '50%',
+                padding: '0 3px 0 0',
+                minWidth: '50px',
+                minHeight: '50px',
                 fontSize: '20px',
+                marginBottom: '8px',
+                marginRight: '5px',
+                fontSize: '50px',
+                color: appConfig.theme.colors.neutrals["300"],
                 marginBottom: '10px',
-                backgroundColor: appConfig.theme.colors.neutrals["300"],
+                backgroundColor: appConfig.theme.colors.primary["000"],
+                hover:{
+                  color: appConfig.theme.colors.primary["500"],
+                  backgroundColor: appConfig.theme.colors.primary["000"],
+                },
+                focus:{
+                  color: appConfig.theme.colors.primary["500"],
+                  backgroundColor: appConfig.theme.colors.primary["000"],
+                }
+                
               }}
             />            
             <ButtonSendSticker 
@@ -186,8 +204,9 @@ function Header() {
           justifyContent: "space-between",
         }}
       >
-        <Text variant="heading5">Chat</Text>
+        <Text variant="heading5" >Chat</Text>
         <Button
+          styleSheet={{color: 'white'}}
           variant="tertiary"
           colorVariant="neutral"
           label="Logout"
@@ -228,8 +247,11 @@ function MessageList(props) {
             <Box
               styleSheet={{
                 marginBottom: "8px",
+                display: 'flex',
+                justifyContent: 'space-between',
               }}
             >
+              <div> 
               <Image
                 styleSheet={{
                   width: "20px",
@@ -253,6 +275,24 @@ function MessageList(props) {
               >
                 {new Date().toLocaleDateString()}
               </Text>
+              </div>
+              <Button 
+              iconName="FaWindowClose"
+              variant="tertiary"
+              styleSheet={{
+                fontSize: '20px',
+                color: appConfig.theme.colors.neutrals['red'],
+                hover:{
+                  color: appConfig.theme.colors.neutrals['red'],
+                  backgroundColor: appConfig.theme.colors.neutrals[300],
+                },
+                focus:{
+                  color: appConfig.theme.colors.primary["red"],
+                  backgroundColor: appConfig.theme.colors.primary["000"],
+                },
+              }}
+            >
+            </Button>
             </Box>
             {/* {mensagem.texto.startWith(':sticker:').toString()} */}
             {mensagem.texto.startsWith(':sticker:')
@@ -261,7 +301,8 @@ function MessageList(props) {
             )
             : (
               mensagem.texto
-            )} 
+            )}
+            
           </Text>
         );
       })}

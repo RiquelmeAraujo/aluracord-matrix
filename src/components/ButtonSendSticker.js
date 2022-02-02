@@ -28,6 +28,11 @@ export function ButtonSendSticker(props) {
           filter: isOpen ? 'grayscale(0)' : 'grayscale(1)',
           hover: {
             filter: 'grayscale(0)',
+            backgroundColor: appConfig.theme.colors.neutrals["000"],
+          },
+          focus:{
+            color: appConfig.theme.colors.primary["500"],
+            backgroundColor: appConfig.theme.colors.primary["000"],
           }
         }}
         label="😋"
